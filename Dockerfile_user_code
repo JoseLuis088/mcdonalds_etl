@@ -1,0 +1,50 @@
+FROM python:3.10-slim
+
+# Checkout and install dagster libraries needed to run the gRPC server
+# exposing your repository to dagster-webserver and dagster-daemon, and to load the DagsterInstance
+
+ENV ACCEPT_EULA=Y
+RUN apt-get update -y && apt-get update \
+  && apt-get install -y --no-install-recommends curl gcc g++ gnupg unixodbc-dev
+
+# Add SQL Server ODBC Driver 17 for Ubuntu 18.04
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
+  && curl https://packages.microsoft.com/config/debian/10/prod.list > /etc/apt/sources.list.d/mssql-release.list \
+  && apt-get update \
+  && apt-get install -y --no-install-recommends --allow-unauthenticated msodbcsql17 mssql-tools \
+  && echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bash_profile \
+  && echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >> ~/.bashrc
+
+
+# Add repository code
+
+WORKDIR /opt/dagster/app
+
+#COPY requirements.txt .
+#RUN pip install -r requirements.txt
+RUN pip install \
+  adlfs \
+  dagster==1.10.* \
+  dagster-webserver \
+  dagster-cloud \
+  dagster-duckdb \
+  pandas \
+  polars-lts-cpu \
+  pyarrow \
+  pyodbc \
+  python-dotenv \
+  SQLAlchemy \
+  grpcio==1.60.0 \
+  grpcio-health-checking==1.60.0 \
+  grpclib==0.4.6 
+
+COPY . /opt/dagster/app/
+
+# Run dagster gRPC server on port 4000
+
+EXPOSE 4000
+
+# CMD allows this to be overridden from run launchers or executors that want
+# to run other commands against your repository
+#CMD ["dagster", "api", "grpc", "-h", "0.0.0.0", "-p", "4000", "-f", "mcdonalds_etl/definitions.py"]
+CMD ["dagster", "code-server", "start", "-h", "0.0.0.0", "-p", "4000", "-f", "./mcdonalds_etl/definitions.py"]

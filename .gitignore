@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+
+.env
+
+mcdonalds_etl.egg-info
+
+data/
+
+tmp*
+
+.python-version
+.tmp_dagster_home_6tgpwett/

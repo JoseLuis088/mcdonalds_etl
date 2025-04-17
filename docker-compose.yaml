@@ -1,0 +1,131 @@
+services:
+  # This service runs the gRPC server that loads your user code, in both dagster-webserver
+  # and dagster-daemon. By setting DAGSTER_CURRENT_IMAGE to its own image, we tell the
+  # run launcher to use this same image when launching runs in a new container as well.
+  # Multiple containers like this can be deployed separately - each just needs to run on
+  # its own port, and have its own entry in the workspace.yaml file that's loaded by the
+      # webserver.
+  mcdonalds_user_code:
+    build:
+      context: .
+      dockerfile: ./Dockerfile_user_code
+    container_name: mcdonalds_user_code
+    ports:
+      - "4000:4000"
+    image: mcdonalds_code_image
+    restart: always
+    environment:
+      - DAGSTER_POSTGRES_USER=${DAGSTER_POSTGRES_USER}
+      - DAGSTER_POSTGRES_PASSWORD=${DAGSTER_POSTGRES_PASSWORD}
+      - DAGSTER_POSTGRES_DB=${DAGSTER_POSTGRES_DB}
+      - DUCKDB_DATABASE=data/staging/data.duckdb
+      - DAGSTER_POSTGRES_USER=${DAGSTER_POSTGRES_USER}
+      - DAGSTER_POSTGRES_PASSWORD=${DAGSTER_POSTGRES_PASSWORD}
+      - DAGSTER_POSTGRES_DB=${DAGSTER_POSTGRES_DB}
+      - ACCOUNT=${ACCOUNT}
+      - CONTAINER=${CONTAINER}
+      - KEY=${KEY}
+      - SERVER=${SERVER}
+      - DATABASE=${DATABASE}
+      - USERNAME=${USERNAME}
+      - PASSWORD=${PASSWORD}
+      - SERVER_DB=${SERVER_DB}
+      - DATABASE_DB=${DATABASE_DB}
+      - USERNAME_DB=${USERNAME_DB}
+      - PASSWORD_DB=${PASSWORD_DB}
+      - DRIVER=${DRIVER}
+    volumes:
+      - dagster_logs:/opt/dagster/dagster_home/storage
+    networks:
+      - mcdonalds_network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  # This service runs the postgres DB used by dagster for run storage, schedule storage,
+  # and event log storage.
+  mcdonalds_postgresql:
+    image: postgres:11
+    expose:
+      - "5432"
+    container_name: mcdonalds_postgresql
+    environment:
+      POSTGRES_USER: "postgres_user"
+      POSTGRES_PASSWORD: "postgres_password"
+      POSTGRES_DB: "postgres_db"
+    volumes:
+      - db:/var/lib/postgresql/data
+    networks:
+      - mcdonalds_network
+
+  # This service runs dagster-webserver, which loads your user code from the user code container.
+  # Since our instance uses the QueuedRunCoordinator, any runs submitted from the webserver will be put on
+  # a queue and later dequeued and launched by dagster-daemon.
+  mcdonalds_webserver:
+    build:
+      context: .
+      dockerfile: ./Dockerfile_dagster
+    entrypoint:
+      - dagster-webserver
+      - -h
+      - "0.0.0.0"
+      - -p
+      - "3001"
+      - -w
+      - workspace.yaml
+    container_name: mcdonalds_webserver
+    expose:
+      - "3001"
+    ports:
+      - "3001:3001"
+    environment:
+      DAGSTER_HOME: "/opt/dagster/dagster_home"
+      DAGSTER_POSTGRES_USER: "postgres_user"
+      DAGSTER_POSTGRES_PASSWORD: "postgres_password"
+      DAGSTER_POSTGRES_DB: "postgres_db"
+    volumes: # Make docker client accessible so we can terminate containers from the webserver
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/io_manager_storage:/tmp/io_manager_storage
+      - dagster_logs:/opt/dagster/dagster_home/storage
+    networks:
+      - mcdonalds_network
+    depends_on:
+      - mcdonalds_user_code
+      - mcdonalds_postgresql
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # This service runs the dagster-daemon process, which is responsible for taking runs
+  # off of the queue and launching them, as well as creating runs from schedules or sensors.
+  mcdonalds_daemon:
+    build:
+      context: .
+      dockerfile: ./Dockerfile_dagster
+    entrypoint:
+      - dagster-daemon
+      - run
+    container_name: mcdonalds_daemon
+    restart: on-failure
+    environment:
+      DAGSTER_HOME: "/opt/dagster/dagster_home"
+      DAGSTER_POSTGRES_USER: "postgres_user"
+      DAGSTER_POSTGRES_PASSWORD: "postgres_password"
+      DAGSTER_POSTGRES_DB: "postgres_db"
+    volumes: # Make docker client accessible so we can launch containers using host docker
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/io_manager_storage:/tmp/io_manager_storage
+      - dagster_logs:/opt/dagster/dagster_home/storage
+    networks:
+      - mcdonalds_network
+    depends_on:
+      - mcdonalds_user_code
+      - mcdonalds_postgresql
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  db:
+  dagster_logs:
+
+networks:
+  mcdonalds_network:
+    driver: bridge
+    name: mcdonalds_network
