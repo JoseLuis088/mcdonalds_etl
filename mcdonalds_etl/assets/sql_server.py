@@ -51,5 +51,4 @@ def sensor_catalog() -> pl.DataFrame:
         """
 
     information = pl.read_database(query, connection)
-    information.write_csv("data/catalog.csv")
     return information

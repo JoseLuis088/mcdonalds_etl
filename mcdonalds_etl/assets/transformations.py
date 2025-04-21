@@ -33,8 +33,6 @@ def reads_per_sensor(sensor_reads: pl.DataFrame, sensor_catalog: pl.DataFrame) -
         pl.col("Value")
     )
 
-    all_data.write_csv("data/all_data.csv")
-
     return all_data
 
 @dg.asset(
@@ -82,8 +80,6 @@ def soda(reads_per_sensor: pl.DataFrame) -> pl.DataFrame:
 
     print(soda)
 
-    soda.write_csv("data/soda.csv")
-
     return soda
 
 @dg.asset(
@@ -121,8 +117,6 @@ def ice_cream(reads_per_sensor: pl.DataFrame) -> pl.DataFrame:
         (pl.col("1") / (pl.col("1") + pl.col("0"))).alias("Funcionamiento")
     )
 
-    ice_cream.write_csv("data/ice_cream.csv")
-
     return ice_cream
 
 @dg.asset(
@@ -147,8 +141,6 @@ def freezing(reads_per_sensor: pl.DataFrame) -> pl.DataFrame:
         pl.col("Temperatura Promedio")
     )
 
-    freezing.write_csv("data/freezing.csv")
-
     return freezing
 
 @dg.asset(
@@ -169,8 +161,6 @@ def conservation(reads_per_sensor: pl.DataFrame) -> pl.DataFrame:
         pl.col("LocationId"),
         pl.col("Temperatura Promedio")
     )
-
-    conservation.write_csv("data/conservation.csv")
 
     return conservation
 
@@ -196,7 +186,5 @@ def defrost_resistance(reads_per_sensor: pl.DataFrame) -> pl.DataFrame:
         pl.col("SensorName"),
         pl.col("Value")
     )
-
-    defrost_resistance.write_csv("data/defrost_resistance.csv")
 
     return defrost_resistance

@@ -37,6 +37,4 @@ def sensor_reads() -> pl.DataFrame:
         pl.col("LocalTimeSpan")
     )
 
-    df.write_csv("data/reads.csv")
-
     return df
