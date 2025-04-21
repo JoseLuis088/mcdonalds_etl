@@ -141,8 +141,8 @@ def freezing(reads_per_sensor: pl.DataFrame) -> pl.DataFrame:
     freezing = constants.average_temp(freezing)
 
     freezing = freezing.select(
-        pl.col("Date").alias("Fecha"),
-        pl.col("Hour").alias("Hora"),
+        pl.col("Date"),
+        pl.col("Hour"),
         pl.col("LocationId"),
         pl.col("Temperatura Promedio")
     )
@@ -164,8 +164,8 @@ def conservation(reads_per_sensor: pl.DataFrame) -> pl.DataFrame:
     conservation = constants.average_temp(conservation)
 
     conservation = conservation.select(
-        pl.col("Date").alias("Fecha"),
-        pl.col("Hour").alias("Hora"),
+        pl.col("Date"),
+        pl.col("Hour"),
         pl.col("LocationId"),
         pl.col("Temperatura Promedio")
     )
