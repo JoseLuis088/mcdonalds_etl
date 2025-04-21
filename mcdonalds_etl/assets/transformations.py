@@ -179,6 +179,7 @@ def defrost_resistance(reads_per_sensor: pl.DataFrame) -> pl.DataFrame:
     )
 
     defrost_resistance = defrost_resistance.select(
+        pl.col("LocalTimeSpan"),
         pl.col("Date").alias("Fecha"),
         pl.col("Hour").alias("Hora"),
         pl.col("LocationId"),
