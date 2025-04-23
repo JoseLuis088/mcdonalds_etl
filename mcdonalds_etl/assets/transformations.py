@@ -43,8 +43,11 @@ def soda(reads_per_sensor: pl.DataFrame) -> pl.DataFrame:
     """
         Reads for the soda machine
     """
-
-    soda = reads_per_sensor.filter(pl.col("DeviceTyId") == "AF0132F0-3EB7-4F52-593F-08DC84AC4EC2")
+    #df = df.filter(pl.col("LocalTimeSpan").cast(pl.Time).is_between(pl.time(7, 0, 0, 0), pl.time(23, 0, 0, 0), closed = "both"))
+    soda = reads_per_sensor.filter(
+        pl.col("DeviceTyId") == "AF0132F0-3EB7-4F52-593F-08DC84AC4EC2",
+        pl.col("LocalTimeSpan").cast(pl.Time).is_between(pl.time(7, 0, 0, 0), pl.time(23, 0, 0, 0), closed = "both")
+    )
 
     soda = soda.with_columns(
         pl.when(
@@ -91,7 +94,10 @@ def ice_cream(reads_per_sensor: pl.DataFrame) -> pl.DataFrame:
         Read fot the ice cream machine
     """
 
-    ice_cream = reads_per_sensor.filter(pl.col("DeviceTyId") == "8CF77DA4-E964-4719-82DA-08DC4394787A")
+    ice_cream = reads_per_sensor.filter(
+        pl.col("DeviceTyId") == "8CF77DA4-E964-4719-82DA-08DC4394787A",
+        pl.col("LocalTimeSpan").cast(pl.Time).is_between(pl.time(7, 0, 0, 0), pl.time(23, 0, 0, 0), closed = "both")
+    )
 
     ice_cream = ice_cream.with_columns(
         pl.when(

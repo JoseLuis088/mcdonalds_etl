@@ -27,8 +27,6 @@ def sensor_reads() -> pl.DataFrame:
         df_2 = pl.read_parquet(f"abfs://{file}", storage_options = {"account_name": config["ACCOUNT"], "account_key": config["KEY"]})
         df = df.extend(df_2)
 
-    df = df.filter(pl.col("LocalTimeSpan").cast(pl.Time).is_between(pl.time(7, 0, 0, 0), pl.time(23, 0, 0, 0), closed = "both"))
-
     df = df.sort(by = pl.col("LocalTimeSpan"))
 
     df = df.select(
