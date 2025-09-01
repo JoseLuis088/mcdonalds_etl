@@ -13,7 +13,7 @@ PYODBC = f"DRIVER={config['DRIVER']};SERVER={config['SERVER']};DATABASE={config[
 )
 def sensor_catalog() -> pl.DataFrame:
     """
-        Catalog of all of the Sensors in SQL Server
+        Esto consulta la base de datos de sidon para obtener el catalogo de sensores, que luego lo retorna como un DataFrame
     """
 
     with pyodbc.connect(PYODBC) as connection:

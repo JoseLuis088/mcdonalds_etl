@@ -12,7 +12,17 @@ from mcdonalds_etl.assets import constants
 )
 def reads_per_sensor(sensor_reads: pl.DataFrame, sensor_catalog: pl.DataFrame) -> pl.DataFrame:
     """
-        The sensors values joined with the sensors catalog
+        Hace el join entre el DataFrame de las lecturas de Azure y el DataFrame con el catalogo de sensores, solamente se usan los siguientes SensorName:
+
+        - Temperatura
+        - Fase 1
+        - Fase 2
+        - Fase 3
+        - Presion agua carbonatada (con todas sus variantes, con acentos, etc. En la linea 35 esta la lista)
+        - Temperatura congelacion 1
+        - Temperatura conservacion
+        - Corriente Resistencia Deshielo
+        - Resistencia Deshielo
     """
 
     all_data = sensor_reads.join(sensor_catalog, on = "SensorId", how = "inner")
@@ -41,7 +51,11 @@ def reads_per_sensor(sensor_reads: pl.DataFrame, sensor_catalog: pl.DataFrame) -
 )
 def soda(reads_per_sensor: pl.DataFrame) -> pl.DataFrame:
     """
-        Reads for the soda machine
+        Lecturas para la maquina de soda en un horario de 7 de la manana a 23 horas, agregando columnas para ver si los valores se encuentran en rango de operacion.
+
+        Para Fase 1, Fase 2 y Fase 3 los valores en rango son de 2 a 11 y para Presion agua carbonatada es de 20 a 40
+
+        Al final este cuenta el numero de horas que la maquina estuvo funcionando correctamente 
     """
     #df = df.filter(pl.col("LocalTimeSpan").cast(pl.Time).is_between(pl.time(7, 0, 0, 0), pl.time(23, 0, 0, 0), closed = "both"))
     soda = reads_per_sensor.filter(
@@ -91,7 +105,11 @@ def soda(reads_per_sensor: pl.DataFrame) -> pl.DataFrame:
 )
 def ice_cream(reads_per_sensor: pl.DataFrame) -> pl.DataFrame:
     """
-        Read fot the ice cream machine
+        Lecturas para la maquina de nieve, igualmente en un horario de 7 a 23 horas.
+
+        Los valores operativos son mayores a 3.5.
+
+        Regresa el numero de horas que estuvo funcionando en rango y el porcentaje de funcionamiento.
     """
 
     ice_cream = reads_per_sensor.filter(
@@ -131,7 +149,8 @@ def ice_cream(reads_per_sensor: pl.DataFrame) -> pl.DataFrame:
 )
 def freezing(reads_per_sensor: pl.DataFrame) -> pl.DataFrame:
     """
-        Reads of the freezing with his percentage of functionality
+       Este asset retorna un DataFrame que contiene la temperatura promedio, para hacer esta transformacion usa una funcion que se encuentra en el archivo constants.py, esa misma funcion
+       ya se encuentra documentada. 
     """
 
     freezing = reads_per_sensor.filter(
@@ -155,7 +174,8 @@ def freezing(reads_per_sensor: pl.DataFrame) -> pl.DataFrame:
 )
 def conservation(reads_per_sensor: pl.DataFrame) -> pl.DataFrame:
     """
-        Reads of the conservation with his percentage of funcionality
+        Este asset retorna un DataFrame que contiene la temperatura promedio, para hacer esta transformacion usa una funcion que se encuentra en el archivo constants.py, esa misma funcion
+        ya se encuentra documentada.
     """
 
     conservation = reads_per_sensor.filter(pl.col("DeviceTyId").is_in(["9EB73A3F-2385-41AB-2554-08DD462F6DF2", "F2259CBC-7268-4388-8913-08DC484D6E84"]))

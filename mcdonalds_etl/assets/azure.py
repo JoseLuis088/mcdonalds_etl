@@ -12,7 +12,7 @@ config = dotenv_values(".env")
 )
 def sensor_reads() -> pl.DataFrame:
     """
-        Raw data of all of the reads
+        Carga los datos del blob storage de azure del dia anterior y returna un DataFrame solamente con las columnas SensorId, Values y LocalTimeSpan
     """
 
     yesterday = date.today() - timedelta(days = 1)
