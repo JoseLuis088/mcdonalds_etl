@@ -11,7 +11,7 @@ services:
       dockerfile: ./Dockerfile_user_code
     container_name: mcdonalds_user_code
     ports:
-      - "4001:4001"
+      - "4000"
     image: mcdonalds_code_image
     restart: always
     environment:
