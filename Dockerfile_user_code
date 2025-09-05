@@ -36,14 +36,17 @@ RUN pip install --no-cache-dir \
   dagster-duckdb \
   dagster-postgres \
   pandas \
-  polars-lts-cpu \
   pyarrow \
   pyodbc \
   python-dotenv \
   SQLAlchemy \
   grpcio==1.60.0 \
   grpcio-health-checking==1.60.0 \
-  grpclib==0.4.6
+  grpclib==0.4.6 \
+# Limpieza por si el resolver metió 'polars'
+ && pip uninstall -y polars || true \
+# Paquetes Python (2) — forzar LTS al final
+ && pip install --no-cache-dir --upgrade --force-reinstall polars-lts-cpu
 
 # Copiar el repositorio al contenedor
 COPY . /opt/dagster/app/
